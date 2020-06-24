@@ -1,5 +1,7 @@
 import requests
 import config 
+import smopy 
+import matplotlib.pyplot as plt 
 
 baseurl='http://api.openweathermap.org/data/2.5/weather?appid='+config.apikey + "&units=metric"
 
@@ -51,7 +53,12 @@ def get_weather(c):
     c["temp"]=weather['main']['temp']
     return c
 
-
+def get_map(coords):
+    map = smopy.Map( (coords['lat_min'],coords['lon_min'],coords['lat_max'],coords['lon_max']) , z=8)
+    ax = map.show_mpl(figsize=(8,8))
+    plt.show()
+    return True
+    
 def main():
     #1 - get locations from file :
     locations = get_locations('lonlat.txt')
@@ -61,20 +68,24 @@ def main():
     for location in locations :
         location = get_weather(location)
 
-    #3 - get area boundary  :
-    area = get_area(locations)
-    print_dict(area,"AREA")
 
-    #4 - get the map (according to boundaries)
-
-    # NOW, we have all the data we need, no more API Request !
-
-    #4 display locations (print) :
+    #3 display locaQtions (print) :
     nbligne=0
     for location in locations :
         nbligne=nbligne+1
         sep = "LIGNE %d"  % nbligne
         print_dict(location,sep)
+        
+        
+    #4 - get area boundary  :
+    area = get_area(locations)
+    print_dict(area,"AREA")
+
+    #4 - get the map (according to boundaries)
+    map = get_map(area)
+    
+    # NOW, we have all the data we need, no more API Request !
+
 
 
 
