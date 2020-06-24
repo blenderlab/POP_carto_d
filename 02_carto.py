@@ -1,7 +1,7 @@
 import requests
-import config as conf
+import config 
 
-baseurl='http://api.openweathermap.org/data/2.5/weather?appid='+conf.apikey + "&units=metric"
+baseurl='http://api.openweathermap.org/data/2.5/weather?appid='+config.apikey + "&units=metric"
 
 def get_locations(filename):
     # Same as 01_carto.py
@@ -32,6 +32,14 @@ def get_area(locations):
         lat_max=max(lat_max,location['lat'])
         lon_min=min(lon_min,location['lon'])
         lon_max=max(lon_max,location['lon'])
+    # adding some border  (10%):
+    o_lat = ((lat_max - lat_min)/100)*10
+    o_lon = ((lon_max - lon_min)/100)*10
+    lat_min=lat_min-o_lat
+    lat_max=lat_max+o_lat
+    lon_min=lon_min-o_lat
+    lon_max=lon_max+o_lat
+    
     # finally , return directly a list
     return {'lat_min':lat_min, 'lat_max':lat_max, 'lon_min':lon_min,'lon_max':lon_max}
 
