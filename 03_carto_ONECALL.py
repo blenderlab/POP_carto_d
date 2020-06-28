@@ -3,8 +3,8 @@ import config
 import smopy 
 import matplotlib.pyplot as plt 
 
-# using the current weather API : 
-baseurl='http://api.openweathermap.org/data/2.5/weather?appid='+config.apikey + "&units=metric"
+# using the ONe Call API : 
+baseurl='http://api.openweathermap.org/data/2.5/onecall?appid='+config.apikey + "&units=metric"
 
 def get_locations(filename):
     # Same as 01_carto.py
@@ -50,9 +50,13 @@ def get_weather(c):
     # Same as 01_carto.py
     url = baseurl + "&lon="+c["lon"] + "&lat="+c['lat']
     weather=requests.get(url).json()
-    print(weather)
-    c["temp"]=weather['main']['temp']
     
+    print(weather)
+    """
+    c["uvi"]=weather['current']['uvi']
+    c["humi"]=weather['current']['humidity']
+    c["temp"]=weather['current']['temp']c["rain1h"]=weather['hourly'][0]['rain']['1h']    
+    """
     return c
 
 def get_map(locations):
@@ -64,7 +68,7 @@ def get_map(locations):
         x,y = map.to_pixels(float(location['lat']),float(location['lon']))
         ax.plot(x,y, 'sg', ms=5)
         ax.line
-        ax.annotate(location['temp'],xy=(x,y),xytext=(x+5,y+5))
+        ax.annotate("%s °C\n %s mm" % (location['temp'],location['rain1h'] ) ,xy=(x,y),xytext=(x+5,y+5))
     plt.show()
     return True
     
