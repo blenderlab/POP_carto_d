@@ -49,14 +49,18 @@ def get_area(locations):
 def get_weather(c):
     # Same as 01_carto.py
     url = baseurl + "&lon="+c["lon"] + "&lat="+c['lat']
+    #print(url)
     weather=requests.get(url).json()
     
-    print(weather)
-    """
-    c["uvi"]=weather['current']['uvi']
-    c["humi"]=weather['current']['humidity']
-    c["temp"]=weather['current']['temp']c["rain1h"]=weather['hourly'][0]['rain']['1h']    
-    """
+    #print(weather)
+    try:
+        c["uvi"]=weather['current']['uvi']
+        c["humi"]=weather['current']['humidity']
+        c["temp"]=weather['current']['temp']
+        c["rain1h"]=weather['hourly'][0]['rain']['1h']    
+    except:
+        print('some fields not found')
+        c['rain1h']=0
     return c
 
 def get_map(locations):
@@ -67,7 +71,6 @@ def get_map(locations):
     for location in locations : 
         x,y = map.to_pixels(float(location['lat']),float(location['lon']))
         ax.plot(x,y, 'sg', ms=5)
-        ax.line
         ax.annotate("%s °C\n %s mm" % (location['temp'],location['rain1h'] ) ,xy=(x,y),xytext=(x+5,y+5))
     plt.show()
     return True
