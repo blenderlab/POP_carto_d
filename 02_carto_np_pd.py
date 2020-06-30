@@ -39,11 +39,9 @@ def get_area(locations):
 
 def get_weather(c):
     # Same as 01_carto.py
-    url = baseurl + "&lon="+c["lon"] + "&lat="+c['lat']
+    url = baseurl + "&lon="+c.lon + "&lat="+c.lat
     weather=requests.get(url).json()
-    print(weather)
-    c["temp"]=weather['main']['temp']
-    
+    c.temp=weather['main']['temp']    
     return c
 
 def get_map(locations):
@@ -58,21 +56,20 @@ def get_map(locations):
     # your call to `mgrid`, but it's broken down a bit to make it easier to
     # understand. The "30j" in mgrid refers to 30 rows or columns.
     numcols, numrows = 30, 30
-    xi = np.linspace(data.lon.min(), data.lon.max(), numcols)
-    yi = np.linspace(data.lat.min(), data.lat.max(), numrows)
+    xi = np.linspace(locations.lon.min(), locations.lon.max(), numcols)
+    yi = np.linspace(locations.lat.min(), locations.lat.max(), numrows)
     xi, yi = np.meshgrid(xi, yi)
     
     #-- Interpolate at the points in xi, yi
     # "griddata" expects "raw" numpy arrays, so we'll pass in
-    # data.x.values instead of just the pandas series data.x
-    x, y, z = data.Lon.values, data.Lat.values, data.Z.values
+    # locations.x.values instead of just the pandas series data.x
+    x, y, z = locations.lon.values, locations.lat.values, locations.temp.values
     zi = griddata(x, y, z, xi, yi)
     
     #-- Display the results
     fig, ax = plt.subplots()
     im = ax.contourf(xi, yi, zi)
-    ax.scatter(data.Lon, data.Lat, c=data.Z, s=100,
-            vmin=zi.min(), vmax=zi.max())
+    ax.scatter(data.Lon, locations.lat, c=locations.temp, s=100,vmin=zi.min(), vmax=zi.max())
     fig.colorbar(im)
     
     plt.show()
@@ -80,14 +77,14 @@ def get_map(locations):
 def main():
     #1 - get locations from file :
     locations = get_locations('lonlat.txt')
-
+    print(locations)
 
     #2 - add weather for each point :
     for location in locations :
         location = get_weather(location)
 
 
-    #3 display locaQtions (print) :
+    #3 display locations (print) :
     nbligne=0
     for location in locations :
         nbligne=nbligne+1
