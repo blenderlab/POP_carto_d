@@ -2,21 +2,19 @@ import requests
 import config 
 import smopy 
 import matplotlib.pyplot as plt 
+import numpy as np
+import pandas as pd
+from matplotlib.mlab import griddata
 
 # using the current weather API : 
 baseurl='http://api.openweathermap.org/data/2.5/weather?appid='+config.apikey + "&units=metric"
 
 def get_locations(filename):
-    # Same as 01_carto.py
-    geocode=[] # geocode = tableau des listes de coord
-    lonlat=open(filename, 'r') # ouverture du fichier
-    for line in lonlat:
-        lon, lat=line.split(',') # on découpe la ligne à la ","
-        coord={} # coord est une liste vide
-        coord["lat"]=lon.strip() #on ajoute un objet "lon"
-        coord["lon"]=lat.strip()#on ajoute un objet "lat"
-        geocode.append(coord) # on ajoute la coord au tableau (à la fin)
-    return geocode #on renvoie notre joli tableau
+    #-- Read the data.
+    # I'm going to use `pandas` to read in and work with your data, mostly due to
+    # the text site names. Using pandas is optional, however.
+    data = pd.read_csv(filename, delim_whitespace=False)
+    return data 
 
 def print_dict(l,titre):
     # Same as 01_carto.py
@@ -25,16 +23,10 @@ def print_dict(l,titre):
         print(item, " = ", l[item])
 
 def get_area(locations):
-    # get area boundaries.
-    # initialising min/max with first record #0
-    lat_min=lat_max=float(locations[0]['lat'])
-    lon_min=lon_max=float(locations[0]['lon'])
-    # let's check each record :
-    for location in locations :
-        lat_min=min(lat_min,float(location['lat']))
-        lat_max=max(lat_max,float(location['lat']))
-        lon_min=min(lon_min,float(location['lon']))
-        lon_max=max(lon_max,float(location['lon']))
+    lat_min=locations.lat.min()
+    lon_min=locations.lon.min()
+    lat_max=locations.lat.max()
+    lon_max=locations.lon.min()
     # adding some border  (10%):
     o_lat = ((lat_max - lat_min)/100)*10
     o_lon = ((lon_max - lon_min)/100)*10
@@ -42,7 +34,6 @@ def get_area(locations):
     lat_max=lat_max+o_lat
     lon_min=lon_min-o_lat
     lon_max=lon_max+o_lat
-    
     # finally , return directly a list
     return {'lat_min':lat_min, 'lat_max':lat_max, 'lon_min':lon_min,'lon_max':lon_max}
 
@@ -60,12 +51,31 @@ def get_map(locations):
     map = smopy.Map( (area['lat_min'],area['lon_min'],area['lat_max'],area['lon_max']) , z=8)
     # Create a figure with the map : 
     ax = map.show_mpl(figsize=(8,8))
-    for location in locations : 
-        x,y = map.to_pixels(float(location['lat']),float(location['lon']))
-        ax.plot(x,y, 'sg', ms=5)
-        ax.annotate(location['temp'],xy=(x,y),xytext=(x+5,y+5))
+
+    
+    #-- Now let's grid your data.
+    # First we'll make a regular grid to interpolate onto. This is equivalent to
+    # your call to `mgrid`, but it's broken down a bit to make it easier to
+    # understand. The "30j" in mgrid refers to 30 rows or columns.
+    numcols, numrows = 30, 30
+    xi = np.linspace(data.lon.min(), data.lon.max(), numcols)
+    yi = np.linspace(data.lat.min(), data.lat.max(), numrows)
+    xi, yi = np.meshgrid(xi, yi)
+    
+    #-- Interpolate at the points in xi, yi
+    # "griddata" expects "raw" numpy arrays, so we'll pass in
+    # data.x.values instead of just the pandas series data.x
+    x, y, z = data.Lon.values, data.Lat.values, data.Z.values
+    zi = griddata(x, y, z, xi, yi)
+    
+    #-- Display the results
+    fig, ax = plt.subplots()
+    im = ax.contourf(xi, yi, zi)
+    ax.scatter(data.Lon, data.Lat, c=data.Z, s=100,
+            vmin=zi.min(), vmax=zi.max())
+    fig.colorbar(im)
+    
     plt.show()
-    return True
     
 def main():
     #1 - get locations from file :
