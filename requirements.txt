@@ -39,7 +39,7 @@ Jinja2==2.11.2
 jsmin==2.2.2
 kiwisolver==1.2.0
 louis==3.14.0
-lxml==4.5.1
+lxml==4.6.2
 mallard-ducktype==1.0.2
 MarkupSafe==1.1.1
 matplotlib==3.2.1
