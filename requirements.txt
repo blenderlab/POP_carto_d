@@ -70,7 +70,7 @@ pyasn1-modules==0.2.8
 pycairo==1.19.1
 pycparser==2.20
 PyDispatcher==2.0.5
-Pygments==2.6.1
+Pygments==2.7.4
 PyGObject==3.36.1
 PyHamcrest==2.0.2
 pyOpenSSL==19.1.0
